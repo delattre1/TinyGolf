@@ -12,10 +12,10 @@ public class BallController : MonoBehaviour
     private Vector3 endPos;
     private bool isClicked;
     private bool isMoving;
+    private GameObject currentClub;
  
     [SerializeField] int force;
-    [SerializeField] AnimationCurve ac;
-    [SerializeField] LineRenderer lr;
+    [SerializeField] GameObject club;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private LayerMask ballLayerMask;
     [SerializeField] private LayerMask groundLayerMask;
@@ -23,7 +23,6 @@ public class BallController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //lr = gameObject.GetComponent<LineRenderer>();
         rb = gameObject.GetComponent<Rigidbody>();
     }
  
@@ -32,36 +31,32 @@ public class BallController : MonoBehaviour
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Input.GetMouseButtonDown(0) && Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, ballLayerMask) && !isMoving){
-            //lr.enabled = true;
-            lr.positionCount = 2;
             startPos = raycastHit.point;
-            lr.SetPosition(0, startPos);
-            lr.useWorldSpace = true;
-            lr.widthCurve = ac;
-            lr.numCapVertices = 10;
             isClicked = true;
+            currentClub = Instantiate(club, new Vector3(transform.position.x - 4.85f, transform.position.y, transform.position.z - 1.05f), Quaternion.identity) as GameObject;
         }
         if (Input.GetMouseButton(0)){
             Ray raycast = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(raycast, out RaycastHit raycastHitGround, float.MaxValue, groundLayerMask)){
                 endPos = raycastHitGround.point;
-                lr.SetPosition(1, endPos);
+                Vector3 angle = endPos - startPos;
+                Vector3 versor = angle.normalized;
+                Vector3 tacoPos = startPos + (1f * -versor);
+                currentClub.transform.position = new Vector3(tacoPos.x - 4.85f, tacoPos.y + 13.9f, tacoPos.z - 1.05f);
             }
         }
         if (Input.GetMouseButtonUp(0) && isClicked){
-            //lr.enabled = false;
             Vector3 _Force = endPos - startPos;
-            float _Distance = Vector3.Distance(startPos,endPos);
-            Debug.Log(_Distance);
             isClicked = false;
             rb.AddForce(_Force*-force);
             isMoving = true;
+            Destroy(currentClub);
         }
-        if(rb.velocity.magnitude < 1f){
-            rb.velocity = new Vector3(0f,0f,0f);
-        }
-        if(rb.velocity.magnitude <= 0f){
+        if(rb.velocity.magnitude <= .5f){
             isMoving = false;
+        }
+        if(rb.velocity.magnitude < 1f && isMoving){
+            rb.velocity = new Vector3(0f,0f,0f);
         }
     }
 }

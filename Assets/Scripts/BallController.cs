@@ -33,7 +33,7 @@ public class BallController : MonoBehaviour
         if (Input.GetMouseButtonDown(0) && Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, ballLayerMask) && !isMoving){
             startPos = raycastHit.point;
             isClicked = true;
-            currentClub = Instantiate(club, new Vector3(transform.position.x - 4.85f, transform.position.y, transform.position.z - 1.05f), Quaternion.identity) as GameObject;
+            currentClub = Instantiate(club, new Vector3(transform.position.x + 4.85f, transform.position.y, transform.position.z + 1.05f), Quaternion.identity) as GameObject;
         }
         if (Input.GetMouseButton(0)){
             Ray raycast = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -41,8 +41,16 @@ public class BallController : MonoBehaviour
                 endPos = raycastHitGround.point;
                 Vector3 angle = endPos - startPos;
                 Vector3 versor = angle.normalized;
-                Vector3 tacoPos = startPos + (1f * -versor);
-                currentClub.transform.position = new Vector3(tacoPos.x - 4.85f, tacoPos.y + 13.9f, tacoPos.z - 1.05f);
+                Vector3 tacoPos = startPos + (versor);
+                float force = (endPos - startPos).magnitude;
+                if (force > 20f){
+                    force = 20f;
+                }
+                float i = Mathf.InverseLerp(0f, 20f, force);
+                currentClub.transform.position = new Vector3(tacoPos.x + 4.85f, tacoPos.y + 13.9f, tacoPos.z);
+                Vector3 newDirection = Vector3.RotateTowards(transform.forward, angle, 20f, 0.0f);
+                currentClub.transform.eulerAngles = newDirection;
+                //currentClub.transform.eulerAngles = new Vector3(i * 90f, 0f, 0f);
             }
         }
         if (Input.GetMouseButtonUp(0) && isClicked){

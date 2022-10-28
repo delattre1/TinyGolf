@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -323,7 +323,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   force: 80
-  club: {fileID: 3719616806978080295, guid: d05a999f5919db84ba2c497bccb99f77, type: 3}
+  club: {fileID: 2402384838048383652, guid: f13cff329a025eb4c92673656b1a33c1, type: 3}
+  rotateClub: {fileID: 1609406960856416946, guid: b45f6733f0f0ef448a83f863fe3ac918, type: 3}
   mainCamera: {fileID: 963194227}
   ballLayerMask:
     serializedVersion: 2
@@ -331,6 +332,7 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 8
+  offset: {x: 0, y: 13.9, z: 0}
 --- !u!1 &623725006
 GameObject:
   m_ObjectHideFlags: 0

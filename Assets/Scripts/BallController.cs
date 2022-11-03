@@ -14,13 +14,11 @@ public class BallController : MonoBehaviour
     private Vector3 endForce;
     private bool isClicked;
     private bool isMoving;
-    private bool isPickingForce;
-    private GameObject currentClub;
-    private GameObject newClub;
+    private GameObject line;
+    private float force = 0f;
  
-    [SerializeField] int force;
-    [SerializeField] GameObject club;
-    [SerializeField] GameObject rotateClub;
+    [SerializeField] int _Force;
+    [SerializeField] float damping;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private LayerMask ballLayerMask;
     [SerializeField] private LayerMask groundLayerMask;
@@ -30,55 +28,50 @@ public class BallController : MonoBehaviour
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody>();
+        line = gameObject.transform.GetChild(0).gameObject;
     }
  
     // Update is called once per frame
     void Update()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        // Criação de batida
         if (Input.GetMouseButtonDown(0) && Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, ballLayerMask) && !isMoving){
             startPos = raycastHit.point;
             isClicked = true;
-            currentClub = Instantiate(club, new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), Quaternion.identity) as GameObject;
+            line.SetActive(true);
         }
-        if (Input.GetMouseButton(0) && isClicked){
+        // Posicionamento e redimensionamento de linha de força
+        if (Input.GetMouseButton(0) && isClicked && !isMoving){
             Ray raycast = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(raycast, out RaycastHit raycastHitGround, float.MaxValue, groundLayerMask)){
                 endPos = raycastHitGround.point;
                 Vector3 vector = endPos - startPos;
                 Vector3 versor = vector.normalized;
-                Vector3 tacoPos = startPos + (versor);
-                float force = (endPos - startPos).magnitude;
+                Vector3 linePos = startPos + (versor);
+                force = (endPos - startPos).magnitude;
                 if (force > 20f){force = 20f;}
+                line.transform.localScale = new Vector3(force, line.transform.localScale.y, line.transform.localScale.z);
                 float hitAngle = force*90f/20f;
-                Vector3 newPosition = new Vector3(tacoPos.x, 0.5f, tacoPos.z);
-                currentClub.transform.position = newPosition;
-                Vector3 targetPosition = new Vector3(transform.position.x, currentClub.transform.position.y, transform.position.z);
-                currentClub.transform.LookAt(targetPosition);
+                Vector3 newPosition = new Vector3(linePos.x, 0.5f, linePos.z);
+                line.transform.position = newPosition;
+                // Vector3 targetPosition = new Vector3(transform.position.x, line.transform.position.y, transform.position.z);
+                // line.transform.LookAt(targetPosition);
+
+                var lookPos = transform.position - line.transform.position;
+                lookPos.y = 0;
+                var rotation = Quaternion.LookRotation(lookPos);
+                line.transform.rotation = Quaternion.Slerp(line.transform.rotation, rotation, Time.deltaTime * damping);
             }
         }
+        // Finalização de batida
         if (Input.GetMouseButtonUp(0) && isClicked){
             isClicked = false;
-            isPickingForce = true;
-            Ray rayForce_0 = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if(Physics.Raycast(rayForce_0, out RaycastHit raycastHit0, float.MaxValue)){startForce = raycastHit0.point;}
-            newClub = Instantiate(rotateClub, new Vector3(currentClub.transform.position.x - 5.1f, currentClub.transform.position.y + 13.75f, currentClub.transform.position.z - 0.2f), Quaternion.identity) as GameObject;
+            isMoving = true;
+            rb.AddForce(_Force*-(endPos - startPos));
+            line.SetActive(false);
         }
-        if (isPickingForce){
-            //Destroy(currentClub);
-            Ray rayForce_1 = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if(Physics.Raycast(rayForce_1, out RaycastHit raycastHit1, float.MaxValue)){endForce = raycastHit1.point;}
-            Vector3 _Force = endForce - startForce;
-            float force = _Force.magnitude;
-            float hitAngle = force*90f/20f;
-            newClub.transform.rotation = Quaternion.AngleAxis(hitAngle, Vector3.right);
-            if (Input.GetMouseButtonDown(0)){    
-                isMoving = true;
-                rb.AddForce(_Force*-force);
-                isPickingForce = false;
-                Destroy(newClub);
-            }
-        }
+        // Finalização de movimento da bola
         if(rb.velocity.magnitude <= .5f){
             isMoving = false;
         }

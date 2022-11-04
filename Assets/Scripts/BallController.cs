@@ -16,6 +16,7 @@ public class BallController : MonoBehaviour
     private bool isMoving;
     private GameObject line;
     private float force = 0f;
+    private PointCounter text;
  
     [SerializeField] int _Force;
     [SerializeField] float damping;
@@ -23,12 +24,14 @@ public class BallController : MonoBehaviour
     [SerializeField] private LayerMask ballLayerMask;
     [SerializeField] private LayerMask groundLayerMask;
     [SerializeField] private Vector3 offset;
+    [SerializeField] private GameObject textBox;
  
     // Start is called before the first frame update
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody>();
         line = gameObject.transform.GetChild(0).gameObject;
+        text = textBox.GetComponent<PointCounter>();
     }
  
     // Update is called once per frame
@@ -51,17 +54,12 @@ public class BallController : MonoBehaviour
                 Vector3 linePos = startPos + (versor);
                 force = (endPos - startPos).magnitude;
                 if (force > 20f){force = 20f;}
-                line.transform.localScale = new Vector3(force, line.transform.localScale.y, line.transform.localScale.z);
+                line.transform.localScale = new Vector3(line.transform.localScale.x, line.transform.localScale.y, force);
                 float hitAngle = force*90f/20f;
                 Vector3 newPosition = new Vector3(linePos.x, 0.5f, linePos.z);
                 line.transform.position = newPosition;
-                // Vector3 targetPosition = new Vector3(transform.position.x, line.transform.position.y, transform.position.z);
-                // line.transform.LookAt(targetPosition);
-
-                var lookPos = transform.position - line.transform.position;
-                lookPos.y = 0;
-                var rotation = Quaternion.LookRotation(lookPos);
-                line.transform.rotation = Quaternion.Slerp(line.transform.rotation, rotation, Time.deltaTime * damping);
+                Vector3 targetPosition = new Vector3(transform.position.x, line.transform.position.y, transform.position.z);
+                line.transform.LookAt(targetPosition);
             }
         }
         // Finalização de batida
@@ -70,6 +68,7 @@ public class BallController : MonoBehaviour
             isMoving = true;
             rb.AddForce(_Force*-(endPos - startPos));
             line.SetActive(false);
+            text.UpdateStrikes();
         }
         // Finalização de movimento da bola
         if(rb.velocity.magnitude <= .5f){

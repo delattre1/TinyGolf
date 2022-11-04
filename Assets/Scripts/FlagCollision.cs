@@ -10,6 +10,7 @@ public class FlagCollision : MonoBehaviour
     [SerializeField] private Vector3 nextPosition;
     [SerializeField] private bool isFinal = false;
     [SerializeField] private GameObject textBox;
+    [SerializeField] private GameObject reiniciar;
     
     // Start is called before the first frame update
     void Start()
@@ -30,7 +31,7 @@ public class FlagCollision : MonoBehaviour
     IEnumerator NextSection(Transform ballTransform, GameObject ballGameObject)
     {
         if(isFinal){
-            Debug.Log("Terminou");
+            reiniciar.SetActive(true);
         }else{
             yield return new WaitForSeconds(1f);
             ballTransform.position = nextPosition;
